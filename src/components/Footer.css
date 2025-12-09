@@ -1,0 +1,115 @@
+.footer {
+    background-color: #FFFFFF;
+    color: #4A4A4A;
+    padding: 3rem 0;
+    font-size: 0.9rem;
+    font-family: 'Inter', sans-serif;
+    border-top: 1px solid #E0E0E0;
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    /* Force 4 columns as requested */
+    gap: 2rem;
+}
+
+/* Responsive for smaller screens */
+@media (max-width: 768px) {
+    .footer-content {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .footer-content {
+        grid-template-columns: 1fr;
+    }
+}
+
+.footer-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.footer-title {
+    color: #000000;
+    font-size: 1.125rem;
+    font-weight: 700;
+    margin-bottom: 1.25rem;
+}
+
+.footer-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.footer-link {
+    color: #4A4A4A;
+    text-decoration: none;
+    transition: color 0.2s ease;
+    display: block;
+}
+
+.footer-link:hover {
+    color: #D9534F;
+    /* Primary accent color */
+    transform: translateX(2px);
+}
+
+.social-icons {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.social-icon {
+    color: #4A4A4A;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.social-icon:hover {
+    transform: translateY(-2px);
+}
+
+.social-icon.facebook:hover {
+    color: #1877f2;
+}
+
+.social-icon.twitter:hover {
+    color: #1da1f2;
+}
+
+.social-icon.instagram:hover {
+    color: #e1306c;
+}
+
+.footer-phone-label {
+    color: #000000;
+    font-size: 1.125rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    margin-top: 1rem;
+}
+
+.footer-phone {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #1f2937;
+}
+
+.footer-copyright {
+    text-align: center;
+    color: #9ca3af;
+    padding-top: 2rem;
+    margin-top: 3rem;
+    border-top: 1px solid #f3f4f6;
+    font-size: 0.875rem;
+}

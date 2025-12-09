@@ -1,13 +1,11 @@
 // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-
-// Importa los servicios que necesites (ejemplo: Auth)
+import { initializeApp, getApp, getApps } from "firebase/app";
 import { getAuth, GoogleAuthProvider, FacebookAuthProvider } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 // TU CONFIGURACIÓN DE FIREBASE (LEYENDO DESDE EL ARCHIVO .env.local)
-// Las variables se acceden usando import.meta.env y el prefijo VITE_
 const firebaseConfig = {
-  // Las claves se leen de VITE_FIREBASE_API_KEY, VITE_FIREBASE_AUTH_DOMAIN, etc.
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
@@ -16,19 +14,24 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
-// Inicializar Firebase
-const app = initializeApp(firebaseConfig);
+// Inicializar Firebase (Instancia Principal - Clientes)
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
-// Exportar servicios que uses en tu app
-export const auth = getAuth(app); 
+// Inicializar Firebase (Instancia Secundaria - Admin)
+// Esto permite tener dos sesiones activas diferentes (cliente y admin)
+const adminApp = !getApps().some(app => app.name === 'AdminApp')
+  ? initializeApp(firebaseConfig, 'AdminApp')
+  : getApp('AdminApp');
 
-// --- CREAR Y EXPORTAR PROVEEDORES DE AUTENTICACIÓN ---
-// Esto es lo que faltaba para resolver el error 'facebookProvider'
+// Exportar servicios
+export const auth = getAuth(app); // Auth para clientes
+export const adminAuth = getAuth(adminApp); // Auth para administradores
+export const db = getFirestore(app);
+export const adminDb = getFirestore(adminApp); // Base de datos usando credenciales de Admin
+export const storage = getStorage(app);
+
+// Proveedores de autenticación
 export const googleProvider = new GoogleAuthProvider();
 export const facebookProvider = new FacebookAuthProvider();
-
-// Si usas Firestore, descomenta la siguiente línea y su importación:
-// import { getFirestore } from "firebase/firestore";
-// export const db = getFirestore(app);
 
 export default app;

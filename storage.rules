@@ -1,0 +1,12 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      // Permitir que CUALQUIER persona vea las imágenes (necesario para la tienda)
+      allow read: if true;
+      
+      // Permitir subir imágenes solo a usuarios autenticados (Admins/Clientes)
+      allow write: if request.auth != null;
+    }
+  }
+}

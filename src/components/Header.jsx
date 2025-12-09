@@ -1,17 +1,21 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Search, ShoppingBag, User, X } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-import { products } from '../data/products';
+import { useProducts } from '../hooks/useProducts';
+import { useTheme } from '../context/ThemeContext';
 import '../App.css';
 import logo from '../assets/logo.jpg';
 
 const Header = () => {
-    const { setIsCartOpen, cartCount, addToCart } = useCart();
+    // setIsCartOpen se importa para abrir el carrito cuando se hace clic en el ícono.
+    const { cartCount, addToCart } = useCart();
+    const { products } = useProducts();
+    const { theme } = useTheme();
     const [searchTerm, setSearchTerm] = useState('');
     const [searchResults, setSearchResults] = useState([]);
     const [showResults, setShowResults] = useState(false);
-    const [activeIndex, setActiveIndex] = useState(0);
+    const [activeIndex, setActiveIndex] = useState(-1);
     const itemRefs = useRef([]);
 
     const handleSearch = (e) => {
@@ -24,12 +28,22 @@ const Header = () => {
                 (product.description && product.description.toLowerCase().includes(term.toLowerCase()))
             );
             setSearchResults(results);
-            setActiveIndex(0);
+            setActiveIndex(-1);
             setShowResults(true);
         } else {
             setSearchResults([]);
             setShowResults(false);
         }
+    };
+
+    // NUEVA FUNCIÓN: Agrega el producto Y limpia los resultados
+    const handleAddToCartAndClear = (product) => {
+        addToCart(product);
+        // 1. Limpia los resultados, cerrando la ventana de búsqueda (lo que el usuario pidió)
+        setSearchResults([]);
+        setSearchTerm(''); // También limpiamos la barra de texto
+        setShowResults(false);
+        // 2. Opcional: Puedes dejar un pequeño indicador visual de éxito aquí si lo deseas.
     };
 
     useEffect(() => {
@@ -45,7 +59,20 @@ const Header = () => {
         }
     }, [activeIndex]);
 
+    const navigate = useNavigate();
+
+    const handleSearchSubmit = () => {
+        if (searchTerm.trim()) {
+            navigate(`/search?q=${encodeURIComponent(searchTerm)}`);
+            setShowResults(false);
+        }
+    };
+
     const handleKeyDown = (e) => {
+        if (e.key === 'Enter' && (!showResults || searchResults.length === 0)) {
+            handleSearchSubmit();
+            return;
+        }
         if (!showResults || searchResults.length === 0) return;
         if (e.key === 'ArrowDown') {
             e.preventDefault();
@@ -57,7 +84,9 @@ const Header = () => {
             e.preventDefault();
             const product = searchResults[activeIndex];
             if (product) {
-                addToCart(product);
+                handleAddToCartAndClear(product);
+            } else {
+                handleSearchSubmit();
             }
         } else if (e.key === 'Escape') {
             setShowResults(false);
@@ -70,22 +99,21 @@ const Header = () => {
         setShowResults(false);
     };
 
-    
-
     return (
         <header className="header">
             <div className="top-bar">
                 <div className="top-bar-container">
-                    <a href="#">Ayuda</a>
-                    <a href="#">Contacto</a>
-                    <a href="#">Sucursales</a>
+                    <Link to="/faq">Ayuda</Link>
+                    <Link to="/contact">Contacto</Link>
+                    <Link to="/stores">Sucursales</Link>
+                    <Link to="/admin/login" style={{ fontWeight: 'bold', color: '#3b82f6', marginLeft: '1rem' }}>Admin Panel</Link>
                 </div>
             </div>
 
             <div className="header-main">
                 <div className="header-container">
                     <Link to="/" className="logo" style={{ display: 'flex', alignItems: 'center' }}>
-                        <img src={logo} alt="Farmony" style={{ height: '60px' }} />
+                        <img src={theme?.logo || logo} alt={theme?.siteName || "Farmony"} style={{ height: '90px' }} />
                     </Link>
 
                     <div className="search-container" style={{ position: 'relative', flex: 1, maxWidth: '600px' }}>
@@ -103,7 +131,7 @@ const Header = () => {
                                     <X size={16} color="gray" />
                                 </button>
                             )}
-                            <button className="search-btn">Buscar</button>
+                            <button className="search-btn" onClick={handleSearchSubmit}>Buscar</button>
                         </div>
 
                         {showResults && (
@@ -147,7 +175,8 @@ const Header = () => {
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        addToCart(product);
+                                                        // LLAMAMOS A LA NUEVA FUNCIÓN PARA CERRAR LA VENTANA
+                                                        handleAddToCartAndClear(product);
                                                     }}
                                                     style={{
                                                         background: 'var(--primary-color)',
@@ -180,28 +209,29 @@ const Header = () => {
                             <User size={24} />
                             <span>Mi Cuenta</span>
                         </Link>
-                        <button className="nav-action-btn" onClick={() => setIsCartOpen(true)}>
+                        <Link to="/cart" className="nav-action-btn" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', color: 'inherit' }}>
                             <div style={{ position: 'relative' }}>
                                 <ShoppingBag size={24} />
                                 {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
                             </div>
                             <span>Carrito</span>
-                        </button>
+                        </Link>
                     </div>
                 </div>
             </div>
 
             <nav className="nav-categories">
-                    <div className="nav-categories-container">
-                        <Link to={`/`} className="category-link">Inicio</Link>
-                        <Link to={`/category/${encodeURIComponent('Medicamentos')}`} className="category-link">Medicamentos</Link>
-                        <Link to={`/category/${encodeURIComponent('Higiene')}`} className="category-link">Higiene y Belleza</Link>
-                        <Link to={`/category/${encodeURIComponent('Bebés')}`} className="category-link">Bebés</Link>
-                        <Link to={`/category/${encodeURIComponent('Vitaminas')}`} className="category-link">Vitaminas</Link>
-                        <Link to={`/category/${encodeURIComponent('Alimentos')}`} className="category-link">Alimentos</Link>
-                        <Link to={`/category/${encodeURIComponent('Ofertas')}`} className="category-link">Ofertas</Link>
-                    </div>
-                </nav>
+                <div className="nav-categories-container">
+                    <Link to={`/`} className="category-link">Inicio</Link>
+                    <Link to={`/category/${encodeURIComponent('Medicamentos')}`} className="category-link">Medicamentos</Link>
+                    <Link to={`/category/${encodeURIComponent('Higiene')}`} className="category-link">Higiene y Belleza</Link>
+                    <Link to={`/category/${encodeURIComponent('Bebés')}`} className="category-link">Bebés</Link>
+                    <Link to={`/category/${encodeURIComponent('Suplementos')}`} className="category-link">Suplementos</Link>
+                    <Link to={`/category/${encodeURIComponent('Alimentos')}`} className="category-link">Alimentos</Link>
+                    <Link to={`/category/${encodeURIComponent('Limpieza')}`} className="category-link">Limpieza</Link>
+                    <Link to={`/category/${encodeURIComponent('Ofertas')}`} className="category-link">Ofertas</Link>
+                </div>
+            </nav>
         </header>
     );
 };
